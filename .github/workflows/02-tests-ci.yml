@@ -24,6 +24,29 @@ jobs:
       ###
       ###
       ###
+        # ====== INÍCIO DA PARTE INSERIDA ======
+      - name: "Configurar Node.js ${{ env.NODE_VERSION }}"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: "Instalar dependências"
+        run: npm ci
+
+      # Executa testes sob o NYCe gera relatórios (lcov + resumo no console)
+      - name: "Rodar testes com cobertura"
+        run: npx nyc --reporter=lcov --reporter=text-summary npm test
+
+      # Faz o gate de cobertura com o valor do COVERAGE_MIN (branches, functions, lines, statements)
+      - name: "Validar cobertura mínima"
+        run: |
+          npx nyc check-coverage \
+            --branches=${COVERAGE_MIN} \
+            --functions=${COVERAGE_MIN} \
+            --lines=${COVERAGE_MIN} \
+            --statements=${COVERAGE_MIN}
+      # ====== FIM DA PARTE INSERIDA ======
 
       - name: "Extrair porcentagem de cobertura" # Esse step será validado pelo desafio, não altere o nome. No final, ele deve gerar o output "coverage" com a porcentagem de cobertura.
         id: coverage
@@ -31,6 +54,8 @@ jobs:
           COVERAGE=$(npx nyc report --reporter=text-summary | grep -oP 'Statements\s*:\s*\K[0-9\.]+(?=%)' | head -1)
           echo "Coverage: $COVERAGE%"
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+
+      
 
   generate-certificate: # DAQUI PARA BAIXO, NÃO ALTERAR
       name: "Desafio Nível 2 - Certificado"
