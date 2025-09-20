@@ -34,11 +34,9 @@ jobs:
       - name: "Instalar dependências"
         run: npm ci
 
-      # Executa testes sob o NYCe gera relatórios (lcov + resumo no console)
       - name: "Rodar testes com cobertura"
-        run: npx nyc --reporter=lcov --reporter=text-summary npm test
+        run: npx nyc --reporter=lcov --reporter=text-summary -- npm run tests
 
-      # Faz o gate de cobertura com o valor do COVERAGE_MIN (branches, functions, lines, statements)
       - name: "Validar cobertura mínima"
         run: |
           npx nyc check-coverage \
@@ -46,15 +44,13 @@ jobs:
             --functions=${COVERAGE_MIN} \
             --lines=${COVERAGE_MIN} \
             --statements=${COVERAGE_MIN}
-      # ====== FIM DA PARTE INSERIDA ======
 
-      - name: "Extrair porcentagem de cobertura" # Esse step será validado pelo desafio, não altere o nome. No final, ele deve gerar o output "coverage" com a porcentagem de cobertura.
+      - name: "Extrair porcentagem de cobertura" # Esse step será validado pelo desafio, não altere o nome
         id: coverage
         run: |
           COVERAGE=$(npx nyc report --reporter=text-summary | grep -oP 'Statements\s*:\s*\K[0-9\.]+(?=%)' | head -1)
           echo "Coverage: $COVERAGE%"
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
-
       
 
   generate-certificate: # DAQUI PARA BAIXO, NÃO ALTERAR
